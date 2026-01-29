@@ -35,15 +35,8 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
 
-    # CORS
-    cors_origins: List[str] = Field(default=["*"])
-
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def parse_cors_origins(cls, v):
-        if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
-        return v
+    # CORS - use string to avoid parsing issues
+    cors_origins: str = Field(default="*")
 
     # Email
     smtp_host: str = Field(default="smtp.gmail.com")

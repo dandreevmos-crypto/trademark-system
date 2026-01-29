@@ -1,10 +1,10 @@
-"""FastAPI application entry point for Fly.io deployment."""
+"""FastAPI application entry point for Render deployment."""
 
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -12,10 +12,12 @@ from fastapi.responses import FileResponse
 from app.config import settings
 from app.database import init_db, Base, engine
 
-# Use simplified API router (without sync that requires Celery)
-from deploy.flyio.api_v1_flyio import api_router
+# Import individual routers (not the combined one that includes sync)
+from app.api.v1 import auth, trademarks, registrations, reports, consents
 
-STATIC_DIR = Path(__file__).parent.parent.parent / "app" / "static"
+STATIC_DIR = Path(__file__).parent / "static"
+if not STATIC_DIR.exists():
+    STATIC_DIR = Path("/app/app/static")
 
 
 async def init_default_data():
@@ -71,7 +73,6 @@ async def init_default_data():
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Startup
-    # Ensure data directory exists
     os.makedirs("./data", exist_ok=True)
 
     # Create tables
@@ -82,25 +83,32 @@ async def lifespan(app: FastAPI):
     await init_default_data()
 
     yield
-    # Shutdown
-    pass
 
 
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="Trademark Management System API (Fly.io Edition)",
+    description="Trademark Management System API (Render Edition)",
     lifespan=lifespan,
 )
 
 # CORS middleware
+cors_origins = settings.cors_origins.split(",") if "," in settings.cors_origins else [settings.cors_origins]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Create API router without sync (which requires Celery)
+api_router = APIRouter()
+api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+api_router.include_router(trademarks.router, prefix="/trademarks", tags=["Trademarks"])
+api_router.include_router(registrations.router, prefix="/registrations", tags=["Registrations"])
+api_router.include_router(reports.router, prefix="/reports", tags=["Reports"])
+api_router.include_router(consents.router, prefix="/consents", tags=["Consent Letters"])
 
 # Include API router
 app.include_router(api_router, prefix="/api/v1")
@@ -109,7 +117,7 @@ app.include_router(api_router, prefix="/api/v1")
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "version": settings.app_version, "edition": "flyio"}
+    return {"status": "healthy", "version": settings.app_version, "edition": "render"}
 
 
 # Mount static files
