@@ -26,7 +26,7 @@ async def init_default_data():
     from app.database import async_session_maker
     from app.models import Territory, User
     # Pre-generated hash for "admin123" password
-    ADMIN_PASSWORD_HASH = "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.qVj7IkZ5yQKmGi"
+    ADMIN_PASSWORD_HASH = "$2b$12$FII3aQeEfdf0RFTrtVft4.BajmcPN9eKDJw5OAkYWT.fB8RWOVr7q"
 
     async with async_session_maker() as session:
         # Check if territories exist
@@ -54,11 +54,12 @@ async def init_default_data():
             session.add_all(territories)
             await session.commit()
 
-        # Check if admin exists
+        # Check if admin exists, update password if exists
         result = await session.execute(
             select(User).where(User.email == "admin@example.com")
         )
-        if result.scalar_one_or_none() is None:
+        existing_admin = result.scalar_one_or_none()
+        if existing_admin is None:
             admin = User(
                 email="admin@example.com",
                 password_hash=ADMIN_PASSWORD_HASH,
@@ -67,6 +68,10 @@ async def init_default_data():
                 is_active=True,
             )
             session.add(admin)
+            await session.commit()
+        else:
+            # Update password hash if different
+            existing_admin.password_hash = ADMIN_PASSWORD_HASH
             await session.commit()
 
 
