@@ -1,0 +1,30 @@
+# Render Blueprint - автоматический деплой
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: trademark-system
+    runtime: docker
+    dockerfilePath: ./deploy/render/Dockerfile
+    dockerContext: .
+    region: frankfurt  # Ближайший к России
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: trademark-db
+          property: connectionString
+      - key: CORS_ORIGINS
+        value: "*"
+
+databases:
+  - name: trademark-db
+    plan: free
+    region: frankfurt
+    databaseName: trademarks
+    user: trademark_user
