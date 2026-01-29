@@ -54,25 +54,20 @@ async def init_default_data():
             session.add_all(territories)
             await session.commit()
 
-        # Check if admin exists, update password if exists
-        result = await session.execute(
-            select(User).where(User.email == "admin@example.com")
+        # Delete existing admin and create new one with correct hash
+        from sqlalchemy import delete
+        await session.execute(delete(User).where(User.email == "admin@example.com"))
+        await session.commit()
+
+        admin = User(
+            email="admin@example.com",
+            password_hash=ADMIN_PASSWORD_HASH,
+            full_name="Administrator",
+            role="admin",
+            is_active=True,
         )
-        existing_admin = result.scalar_one_or_none()
-        if existing_admin is None:
-            admin = User(
-                email="admin@example.com",
-                password_hash=ADMIN_PASSWORD_HASH,
-                full_name="Administrator",
-                role="admin",
-                is_active=True,
-            )
-            session.add(admin)
-            await session.commit()
-        else:
-            # Update password hash if different
-            existing_admin.password_hash = ADMIN_PASSWORD_HASH
-            await session.commit()
+        session.add(admin)
+        await session.commit()
 
 
 @asynccontextmanager
