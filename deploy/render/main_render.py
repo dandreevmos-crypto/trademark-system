@@ -48,7 +48,7 @@ async def init_default_data():
                 Territory(iso_code="ES", name_ru="Испания", name_en="Spain"),
                 Territory(iso_code="CA", name_ru="Канада", name_en="Canada"),
                 Territory(iso_code="AU", name_ru="Австралия", name_en="Australia"),
-                Territory(iso_code="WIPO", name_ru="ВОИС (Мадридская система)", name_en="WIPO (Madrid System)"),
+                Territory(iso_code="WO", name_ru="ВОИС (Мадридская система)", name_en="WIPO (Madrid System)"),
             ]
             session.add_all(territories)
             await session.commit()
