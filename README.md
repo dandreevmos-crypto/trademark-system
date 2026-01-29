@@ -164,3 +164,4 @@ celery -A app.tasks.celery_app beat -l info
 - **Cache/Queue:** Redis 7
 - **Storage:** MinIO (S3-compatible)
 - **Scraping:** Playwright
+# trademark-system
