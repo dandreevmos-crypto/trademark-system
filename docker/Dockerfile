@@ -25,6 +25,7 @@ RUN useradd -m -u 1000 appuser
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     curl \
+    netcat-traditional \
     # Playwright/Chromium dependencies
     libnss3 \
     libnspr4 \
@@ -62,10 +63,13 @@ USER root
 # Copy application code
 COPY app/ /app/app/
 COPY scripts/ /app/scripts/
-COPY migrations/ /app/migrations/
+COPY alembic/ /app/alembic/
+COPY alembic.ini /app/
+COPY docker/entrypoint.sh /app/entrypoint.sh
 
 # Fix permissions
-RUN chown -R appuser:appuser /app
+RUN chmod +x /app/entrypoint.sh && \
+    chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser
@@ -78,6 +82,9 @@ ENV PATH="/home/appuser/.local/bin:$PATH"
 
 # Expose port
 EXPOSE 8000
+
+# Entrypoint for initialization
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Default command
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

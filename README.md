@@ -2,50 +2,65 @@
 
 Система управления товарными знаками с автоматическим мониторингом, уведомлениями и интеграцией с ФИПС и WIPO.
 
-## Быстрый старт
+## Быстрый старт (Docker)
 
-### 1. Запуск с Docker Compose (рекомендуется)
+### Требования
+- Docker и Docker Compose
+
+### Запуск за 3 команды
 
 ```bash
-# Скопировать конфигурацию
+# 1. Клонировать репозиторий
+git clone https://github.com/dandreevmos-crypto/trademark-system.git
+cd trademark-system
+
+# 2. Скопировать конфигурацию
 cp .env.example .env
 
-# Отредактировать .env (особенно SECRET_KEY и JWT_SECRET_KEY)
-nano .env
-
-# Запустить все сервисы
+# 3. Запустить
 docker-compose up -d
+```
 
-# Проверить статус
-docker-compose ps
+**Готово!** Система автоматически:
+- Создаст базу данных и все таблицы
+- Добавит администратора и базовые территории
+- Запустит веб-сервер
 
-# Просмотреть логи
+### Доступ к системе
+
+| Сервис | URL | Логин |
+|--------|-----|-------|
+| **Web UI** | http://localhost:8000/static/index.html | admin@example.com / admin123 |
+| **API Docs** | http://localhost:8000/docs | - |
+| **MinIO Console** | http://localhost:9001 | minioadmin / minioadmin |
+
+### Управление
+
+```bash
+# Просмотр логов
 docker-compose logs -f web
+
+# Остановка
+docker-compose down
+
+# Остановка с удалением данных
+docker-compose down -v
+
+# Перезапуск
+docker-compose restart
 ```
 
-После запуска:
-- API доступен на http://localhost:8000
-- Документация API: http://localhost:8000/docs
-- MinIO Console: http://localhost:9001 (minioadmin/minioadmin)
-
-### 2. Создание администратора
+## Импорт данных из Excel
 
 ```bash
-# Через Docker
-docker-compose exec web python scripts/create_admin.py admin@example.com yourpassword "Имя Администратора"
-
-# Или локально
-python scripts/create_admin.py admin@example.com yourpassword
+# Скопируйте Excel файл в папку проекта, затем:
+docker-compose exec web python scripts/import_excel.py /app/yourfile.xlsx
 ```
 
-### 3. Импорт данных из Excel
+## Создание дополнительных пользователей
 
 ```bash
-# Через Docker
-docker-compose exec web python scripts/import_excel.py /path/to/excel.xlsx
-
-# Или локально
-python scripts/import_excel.py "Актуальный реестр товарных знаков.xlsx"
+docker-compose exec web python scripts/create_admin.py user@example.com password123 "Имя Фамилия"
 ```
 
 ## Структура проекта
@@ -53,115 +68,97 @@ python scripts/import_excel.py "Актуальный реестр товарны
 ```
 trademark_system/
 ├── app/
-│   ├── api/v1/           # API endpoints
-│   ├── models/           # SQLAlchemy модели
-│   ├── schemas/          # Pydantic схемы
+│   ├── api/v1/           # REST API endpoints
+│   ├── models/           # SQLAlchemy модели (БД)
+│   ├── schemas/          # Pydantic схемы (валидация)
 │   ├── services/         # Бизнес-логика
-│   ├── integrations/     # Интеграции (FIPS, WIPO, Email, Telegram)
-│   ├── tasks/            # Celery задачи
-│   ├── core/             # Аутентификация, безопасность
+│   ├── integrations/     # FIPS, WIPO, Email, Telegram
+│   ├── tasks/            # Celery фоновые задачи
+│   ├── static/           # Web UI (HTML/CSS/JS)
 │   └── main.py           # FastAPI приложение
-├── scripts/              # Скрипты импорта/администрирования
+├── scripts/              # Утилиты
+├── alembic/              # Миграции БД
 ├── docker/               # Docker конфигурация
 └── docker-compose.yml
 ```
 
-## API Endpoints
+## Основные функции
 
-### Аутентификация
-- `POST /api/v1/auth/login` - Вход
-- `POST /api/v1/auth/refresh` - Обновление токена
-- `GET /api/v1/auth/me` - Информация о пользователе
+### Управление товарными знаками
+- Каталог ТЗ с фильтрацией по территориям, классам МКТУ, правообладателям
+- Отслеживание статусов регистрации
+- Мониторинг сроков действия
 
-### Товарные знаки
-- `GET /api/v1/trademarks` - Список с фильтрацией
-- `GET /api/v1/trademarks/{id}` - Детали знака
-- `POST /api/v1/trademarks` - Создание (admin)
-- `PATCH /api/v1/trademarks/{id}` - Обновление (admin)
+### Уведомления
+- Автоматические уведомления об истечении срока: за 6, 3 и 1 месяц
+- Каналы: Email и Telegram
+- Возможность отметить "продление подано" или "решено не продлевать"
 
-### Регистрации
-- `GET /api/v1/registrations/expiring/list` - Истекающие регистрации
-- `POST /api/v1/registrations/{id}/renewal-filed` - Отметить продление
-- `POST /api/v1/registrations/{id}/not-renewing` - Отметить отказ от продления
+### Интеграции
+- **ФИПС** — автоматический парсинг данных из реестра Роспатента
+- **WIPO** — синхронизация с базой Madrid Monitor
+- **MinIO** — хранение документов (S3-совместимое)
 
 ### Отчёты
-- `GET /api/v1/reports/export/excel` - Экспорт в Excel
-- `POST /api/v1/reports/export/excel` - Экспорт с фильтрами
+- Экспорт в Excel с фильтрами
+- Генерация согласительных писем (consent letters)
 
-## Фильтры экспорта
+## API
 
-```json
-{
-  "rights_holder_ids": ["uuid1", "uuid2"],
-  "territory_ids": [1, 2],
-  "icgs_classes": [25, 35],
-  "product_groups": ["Обувь", "Одежда"],
-  "statuses": ["registered"],
-  "renewal_statuses": ["active"],
-  "expiration_from": "2024-01-01",
-  "expiration_to": "2024-12-31",
-  "include_expired": false,
-  "include_rejected": false
-}
+### Аутентификация
+```
+POST /api/v1/auth/login          # Вход
+POST /api/v1/auth/refresh        # Обновление токена
+GET  /api/v1/auth/me             # Текущий пользователь
 ```
 
-## Уведомления
-
-Система отправляет уведомления об истечении срока действия:
-- За 6 месяцев
-- За 3 месяца
-- За 1 месяц
-
-Каналы: Email и Telegram
-
-Чтобы остановить уведомления:
-1. Отметить "Продление подано" (`POST /registrations/{id}/renewal-filed`)
-2. Отметить "Решено не продлевать" (`POST /registrations/{id}/not-renewing`)
-
-## Настройка Telegram бота
-
-1. Создать бота через @BotFather
-2. Получить токен
-3. Добавить в `.env`:
-   ```
-   TELEGRAM_BOT_TOKEN=your-bot-token
-   ```
-4. Пользователь должен написать `/start` боту
-5. Привязать Telegram ID в профиле пользователя
-
-## Разработка
-
-### Локальная установка
-
-```bash
-# Создать виртуальное окружение
-python -m venv venv
-source venv/bin/activate
-
-# Установить зависимости
-pip install -r requirements.txt
-
-# Установить Playwright браузеры
-playwright install chromium
-
-# Запустить PostgreSQL и Redis (docker)
-docker-compose up -d db redis
-
-# Запустить приложение
-uvicorn app.main:app --reload
-
-# Запустить Celery worker
-celery -A app.tasks.celery_app worker -l info
-
-# Запустить Celery beat
-celery -A app.tasks.celery_app beat -l info
+### Товарные знаки
 ```
+GET  /api/v1/trademarks          # Список с фильтрацией
+GET  /api/v1/trademarks/{id}     # Детали
+POST /api/v1/trademarks          # Создание
+PATCH /api/v1/trademarks/{id}    # Обновление
+```
+
+### Регистрации
+```
+GET  /api/v1/registrations/expiring/list     # Истекающие
+POST /api/v1/registrations/{id}/renewal-filed    # Отметить продление
+POST /api/v1/registrations/{id}/not-renewing     # Отказ от продления
+```
+
+### Отчёты
+```
+GET  /api/v1/reports/export/excel    # Экспорт всего
+POST /api/v1/reports/export/excel    # Экспорт с фильтрами
+```
+
+## Конфигурация
+
+Основные переменные окружения (`.env`):
+
+| Переменная | Описание |
+|------------|----------|
+| `SECRET_KEY` | Секретный ключ приложения |
+| `JWT_SECRET_KEY` | Ключ для JWT токенов |
+| `DATABASE_URL` | URL подключения к PostgreSQL |
+| `REDIS_URL` | URL подключения к Redis |
+| `SMTP_*` | Настройки почтового сервера |
+| `TELEGRAM_BOT_TOKEN` | Токен Telegram бота |
 
 ## Технологии
 
-- **Backend:** FastAPI, SQLAlchemy, Celery
+- **Backend:** Python 3.11, FastAPI, SQLAlchemy 2.0, Celery
 - **Database:** PostgreSQL 15
 - **Cache/Queue:** Redis 7
-- **Storage:** MinIO (S3-compatible)
-- **Scraping:** Playwright
-# trademark-system
+- **Storage:** MinIO
+- **Scraping:** Playwright (для ФИПС)
+- **Frontend:** Vanilla JS (без фреймворков)
+
+## Лицензия
+
+MIT
+
+---
+
+Создано с помощью [Claude](https://claude.ai)
