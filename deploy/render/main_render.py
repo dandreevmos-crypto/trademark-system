@@ -25,8 +25,8 @@ async def init_default_data():
     from sqlalchemy import select
     from app.database import async_session_maker
     from app.models import Territory, User
-    from passlib.context import CryptContext
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    # Pre-generated hash for "admin123" password
+    ADMIN_PASSWORD_HASH = "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.qVj7IkZ5yQKmGi"
 
     async with async_session_maker() as session:
         # Check if territories exist
@@ -61,7 +61,7 @@ async def init_default_data():
         if result.scalar_one_or_none() is None:
             admin = User(
                 email="admin@example.com",
-                hashed_password=pwd_context.hash("admin123"),
+                hashed_password=ADMIN_PASSWORD_HASH,
                 full_name="Administrator",
                 role="admin",
                 is_active=True,
