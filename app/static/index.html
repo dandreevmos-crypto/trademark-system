@@ -254,6 +254,8 @@
                     <button class="btn btn-primary" onclick="applyFilters()">Применить</button>
                     <button class="btn btn-secondary" onclick="resetFilters()">Сбросить фильтры</button>
                     <button class="btn btn-success" onclick="exportExcel()">Скачать Excel</button>
+                    <input type="file" id="importFile" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this)">
+                    <button class="btn" style="background:#ff9800;color:white" onclick="document.getElementById('importFile').click()">Импорт Excel</button>
                 </div>
             </div>
 
@@ -691,6 +693,50 @@
                 a.click();
             } catch (error) {
                 alert('Ошибка при экспорте: ' + error.message);
+            }
+        }
+
+        async function importExcel(input) {
+            if (!input.files || !input.files[0]) return;
+
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const btn = document.querySelector('[onclick*="importFile"]');
+                btn.textContent = 'Загрузка...';
+                btn.disabled = true;
+
+                const response = await fetch(`${API_URL}/api/v1/import/excel`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.detail || 'Ошибка импорта');
+                }
+
+                alert(`Импорт завершён!\n\nСтатистика:\n- Обработано строк: ${result.statistics.rows_processed}\n- Создано ТЗ: ${result.statistics.trademarks_created}\n- Создано регистраций: ${result.statistics.registrations_created}\n- Создано правообладателей: ${result.statistics.rights_holders_created}\n- Ошибок: ${result.statistics.errors}`);
+
+                // Reload data
+                await Promise.all([
+                    loadFilterData(),
+                    loadStats(),
+                    loadTrademarks(),
+                    loadExpiring()
+                ]);
+
+            } catch (error) {
+                alert('Ошибка импорта: ' + error.message);
+            } finally {
+                input.value = '';
+                const btn = document.querySelector('[onclick*="importFile"]');
+                btn.textContent = 'Импорт Excel';
+                btn.disabled = false;
             }
         }
 

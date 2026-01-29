@@ -13,7 +13,7 @@ from app.config import settings
 from app.database import init_db, Base, engine
 
 # Import individual routers (not the combined one that includes sync)
-from app.api.v1 import auth, trademarks, registrations, reports, consents
+from app.api.v1 import auth, trademarks, registrations, reports, consents, import_data
 
 STATIC_DIR = Path(__file__).parent / "static"
 if not STATIC_DIR.exists():
@@ -110,6 +110,7 @@ api_router.include_router(trademarks.router, prefix="/trademarks", tags=["Tradem
 api_router.include_router(registrations.router, prefix="/registrations", tags=["Registrations"])
 api_router.include_router(reports.router, prefix="/reports", tags=["Reports"])
 api_router.include_router(consents.router, prefix="/consents", tags=["Consent Letters"])
+api_router.include_router(import_data.router, prefix="/import", tags=["Import Data"])
 
 # Include API router
 app.include_router(api_router, prefix="/api/v1")
