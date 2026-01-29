@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Согласия на использование ТЗ</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 20px; background: #f5f5f5;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1, h2 { color: #333; margin-bottom: 20px; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+        }
+        .header-buttons { display: flex; gap: 10px; }
+        .header a, .header button {
+            padding: 10px 20px; border-radius: 4px; text-decoration: none;
+            border: none; cursor: pointer; font-size: 14px;
+        }
+        .btn-back { background: #e0e0e0; color: #333; }
+        .btn-back:hover { background: #d0d0d0; }
+        .btn-logout { background: #f44336; color: white; }
+        .btn-primary { background: #4CAF50; color: white; }
+        .btn-primary:hover { background: #45a049; }
+        .btn-secondary { background: #2196F3; color: white; }
+        .btn-secondary:hover { background: #1976D2; }
+        .btn-danger { background: #f44336; color: white; }
+
+        /* Tabs */
+        .tabs {
+            display: flex; gap: 0; margin-bottom: 20px;
+        }
+        .tab {
+            padding: 12px 24px; background: #e0e0e0; border: none;
+            cursor: pointer; font-size: 14px; border-radius: 8px 8px 0 0;
+        }
+        .tab.active { background: white; font-weight: bold; }
+        .tab:hover:not(.active) { background: #d0d0d0; }
+
+        /* Content sections */
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+
+        /* Table styles */
+        .table-container {
+            background: white; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden;
+        }
+        .table-header {
+            padding: 15px 20px; border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f9f9f9; font-weight: 600; color: #666; }
+        tr:hover { background: #f5f5f5; }
+        td { font-size: 14px; }
+
+        /* Form styles */
+        .form-container {
+            background: white; padding: 30px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-section { margin-bottom: 30px; }
+        .form-section h3 {
+            margin: 0 0 15px 0; padding-bottom: 10px;
+            border-bottom: 1px solid #eee; color: #333;
+        }
+        .form-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: span 2; }
+        .form-group label {
+            font-size: 13px; color: #666; margin-bottom: 5px; font-weight: 600;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px;
+            font-size: 14px; font-family: inherit;
+        }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: #4CAF50;
+        }
+
+        .form-actions {
+            display: flex; gap: 15px; margin-top: 30px; justify-content: flex-end;
+        }
+        .form-actions button {
+            padding: 12px 30px; border: none; border-radius: 4px;
+            font-size: 14px; cursor: pointer;
+        }
+
+        .reg-numbers-list {
+            display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;
+        }
+        .reg-number-tag {
+            background: #e3f2fd; color: #1565c0; padding: 5px 10px;
+            border-radius: 16px; font-size: 13px; display: flex; align-items: center; gap: 5px;
+        }
+        .reg-number-tag button {
+            background: none; border: none; color: #1565c0; cursor: pointer;
+            font-size: 16px; padding: 0; line-height: 1;
+        }
+        .add-reg-number {
+            display: flex; gap: 10px; margin-top: 10px;
+        }
+        .add-reg-number input { flex: 1; }
+        .add-reg-number button { padding: 10px 15px; white-space: nowrap; }
+
+        .action-btn {
+            padding: 5px 10px; border: none; border-radius: 4px;
+            cursor: pointer; font-size: 12px; margin-right: 5px;
+        }
+
+        .error { color: #d32f2f; margin-top: 10px; font-size: 14px; }
+        .success { color: #2e7d32; margin-top: 10px; font-size: 14px; }
+
+        .pagination {
+            padding: 15px 20px; display: flex; justify-content: center; gap: 10px;
+        }
+        .pagination button {
+            padding: 8px 16px; border: 1px solid #ddd; background: white;
+            border-radius: 4px; cursor: pointer;
+        }
+        .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Language selector */
+        .language-selector {
+            display: flex; gap: 15px; align-items: center;
+        }
+        .language-option {
+            display: flex; align-items: center; gap: 5px; cursor: pointer;
+        }
+        .language-option input { cursor: pointer; }
+
+        /* Autocomplete */
+        .autocomplete-container { position: relative; }
+        .autocomplete-list {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: white; border: 1px solid #ddd; border-top: none;
+            border-radius: 0 0 4px 4px; max-height: 250px; overflow-y: auto;
+            z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .autocomplete-item {
+            padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0;
+        }
+        .autocomplete-item:hover { background: #f5f5f5; }
+        .autocomplete-item:last-child { border-bottom: none; }
+        .autocomplete-item .tm-name { font-weight: 600; color: #333; }
+        .autocomplete-item .tm-details { font-size: 12px; color: #666; margin-top: 3px; }
+        .autocomplete-item .reg-count { color: #1565c0; }
+
+        /* Found registrations */
+        .found-registrations {
+            background: #f5f5f5; padding: 15px; border-radius: 4px; margin-top: 15px;
+        }
+        .found-registrations h4 { margin: 0 0 10px 0; font-size: 14px; color: #333; }
+        .found-reg-item {
+            display: flex; align-items: center; gap: 10px; padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .found-reg-item:last-child { border-bottom: none; }
+        .found-reg-item input[type="checkbox"] { cursor: pointer; }
+        .found-reg-item label { cursor: pointer; flex: 1; }
+        .found-reg-item .territory { color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Согласия на использование товарных знаков</h1>
+            <div class="header-buttons">
+                <a href="/" class="btn-back">К списку ТЗ</a>
+                <button onclick="logout()" class="btn-logout">Выйти</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('list')">Список согласий</button>
+            <button class="tab" onclick="showTab('create')">Создать согласие</button>
+        </div>
+
+        <!-- List section -->
+        <div id="listSection" class="content-section active">
+            <div class="table-container">
+                <div class="table-header">
+                    <span id="resultCount">Загрузка...</span>
+                    <input type="text" id="searchConsents" placeholder="Поиск..." onkeyup="debounceSearch()" style="padding:8px;border:1px solid #ddd;border-radius:4px;width:250px;">
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Товарный знак</th>
+                            <th>Получатель</th>
+                            <th>Номера регистраций</th>
+                            <th>Язык</th>
+                            <th>Срок действия</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="consentsTableBody">
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <button onclick="prevPage()" id="prevBtn">Назад</button>
+                    <span id="pageInfo">Страница 1</span>
+                    <button onclick="nextPage()" id="nextBtn">Вперёд</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create section -->
+        <div id="createSection" class="content-section">
+            <div class="form-container">
+                <form id="consentForm" onsubmit="submitConsent(event)">
+
+                    <!-- Язык документа -->
+                    <div class="form-section">
+                        <h3>Язык документа</h3>
+                        <div class="language-selector">
+                            <label class="language-option">
+                                <input type="radio" name="documentLanguage" value="ru" id="langRu">
+                                Русский
+                            </label>
+                            <label class="language-option">
+                                <input type="radio" name="documentLanguage" value="en" id="langEn">
+                                English
+                            </label>
+                            <label class="language-option">
+                                <input type="radio" name="documentLanguage" value="both" id="langBoth" checked>
+                                Оба языка
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Правообладатель -->
+                    <div class="form-section">
+                        <h3>Правообладатель</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label>Правообладатель *</label>
+                                <select id="rightsHolderId" required>
+                                    <option value="">Выберите правообладателя</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>ФИО подписанта (рус) *</label>
+                                <input type="text" id="signatoryNameRu" required placeholder="Саймон Пол Лис">
+                            </div>
+                            <div class="form-group">
+                                <label>ФИО подписанта (англ) *</label>
+                                <input type="text" id="signatoryNameEn" required placeholder="Simon Paul Lees">
+                            </div>
+                            <div class="form-group">
+                                <label>Должность (рус)</label>
+                                <input type="text" id="signatoryPositionRu" value="Директор" placeholder="Директор">
+                            </div>
+                            <div class="form-group">
+                                <label>Должность (англ)</label>
+                                <input type="text" id="signatoryPositionEn" value="Director" placeholder="Director">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Получатель -->
+                    <div class="form-section">
+                        <h3>Получатель согласия</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Наименование (рус) *</label>
+                                <input type="text" id="recipientNameRu" required placeholder="АО «МПШО Смена»">
+                            </div>
+                            <div class="form-group">
+                                <label>Наименование (англ) *</label>
+                                <input type="text" id="recipientNameEn" required placeholder="JSC MPSHO Smena">
+                            </div>
+                            <div class="form-group">
+                                <label>ИНН (нажмите "Проверить" для автозаполнения)</label>
+                                <div style="display:flex;gap:10px;">
+                                    <input type="text" id="recipientInn" placeholder="7716221243" style="flex:1;">
+                                    <button type="button" class="btn-secondary" onclick="lookupInn()" style="padding:10px 15px;white-space:nowrap;">Проверить</button>
+                                </div>
+                                <div id="innLookupResult" style="margin-top:5px;font-size:12px;"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Адрес (рус) *</label>
+                                <textarea id="recipientAddressRu" required placeholder="129226, г. Москва, ул. Докукина, д.16, стр.3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Адрес (англ) *</label>
+                                <textarea id="recipientAddressEn" required placeholder="129226, Moscow, Dokukina str., 16, building 3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Основание -->
+                    <div class="form-section">
+                        <h3>Основание (договор)</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Номер договора</label>
+                                <input type="text" id="contractNumber" placeholder="КК-222">
+                            </div>
+                            <div class="form-group">
+                                <label>Дата договора</label>
+                                <input type="date" id="contractDate">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Товарный знак -->
+                    <div class="form-section">
+                        <h3>Товарный знак</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width autocomplete-container">
+                                <label>Наименование ТЗ * (начните вводить для поиска)</label>
+                                <input type="text" id="trademarkName" required placeholder="Начните вводить название..." autocomplete="off" oninput="searchTrademarks()">
+                                <div class="autocomplete-list" id="trademarkAutocomplete" style="display:none;"></div>
+                            </div>
+
+                            <!-- Найденные регистрации -->
+                            <div class="form-group full-width" id="foundRegistrationsContainer" style="display:none;">
+                                <div class="found-registrations">
+                                    <h4>Найденные регистрации (выберите нужные):</h4>
+                                    <div id="foundRegistrationsList"></div>
+                                    <div style="margin-top:10px;">
+                                        <button type="button" class="btn-secondary" onclick="selectAllRegistrations()" style="padding:8px 15px;font-size:13px;">Выбрать все</button>
+                                        <button type="button" class="btn-back" onclick="deselectAllRegistrations()" style="padding:8px 15px;font-size:13px;margin-left:10px;">Снять все</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>Выбранные номера регистраций *</label>
+                                <div class="reg-numbers-list" id="regNumbersList"></div>
+                                <div class="add-reg-number">
+                                    <input type="text" id="newRegNumber" placeholder="Или введите номер вручную">
+                                    <button type="button" class="btn-secondary" onclick="addRegNumber()">Добавить</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Цель использования -->
+                    <div class="form-section">
+                        <h3>Цель использования</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Цель (рус) *</label>
+                                <textarea id="usagePurposeRu" required placeholder="маркировки производимой продукции: детская одежда"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Цель (англ) *</label>
+                                <textarea id="usagePurposeEn" required placeholder="labeling manufactured products: children's clothing"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Срок действия -->
+                    <div class="form-section">
+                        <h3>Срок действия</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Дата документа *</label>
+                                <input type="date" id="documentDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Действует с *</label>
+                                <input type="date" id="validFrom" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Действует до *</label>
+                                <input type="date" id="validUntil" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="formError" class="error"></div>
+                    <div id="formSuccess" class="success"></div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-back" onclick="resetForm()">Очистить</button>
+                        <button type="submit" class="btn-primary">Создать согласие</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '';
+        let token = localStorage.getItem('token');
+        let currentPage = 1;
+        let totalPages = 1;
+        let searchTimeout = null;
+        let trademarkSearchTimeout = null;
+        let registrationNumbers = [];
+        let rightsHoldersCache = [];
+        let foundTrademarks = [];
+        let foundRegistrations = [];
+
+        // Redirect if not logged in
+        if (!token) {
+            window.location.href = '/';
+        }
+
+        // Initial load
+        loadRightsHolders();
+        loadConsents();
+        setDefaultDates();
+
+        // Close autocomplete on click outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.autocomplete-container')) {
+                document.getElementById('trademarkAutocomplete').style.display = 'none';
+            }
+        });
+
+        function setDefaultDates() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('documentDate').value = today;
+            document.getElementById('validFrom').value = today;
+
+            // Default valid until - end of year
+            const endOfYear = new Date();
+            endOfYear.setMonth(11, 31);
+            document.getElementById('validUntil').value = endOfYear.toISOString().split('T')[0];
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+
+            if (tabName === 'list') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('listSection').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('createSection').classList.add('active');
+            }
+        }
+
+        async function apiCall(url, options = {}) {
+            const response = await fetch(url, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            if (response.status === 401) {
+                logout();
+                throw new Error('Session expired');
+            }
+            return response;
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            window.location.href = '/';
+        }
+
+        async function loadRightsHolders() {
+            try {
+                const response = await apiCall(`${API_URL}/api/v1/trademarks/rights-holders/list`);
+                rightsHoldersCache = await response.json();
+
+                const select = document.getElementById('rightsHolderId');
+                select.innerHTML = '<option value="">Выберите правообладателя</option>';
+                for (const rh of rightsHoldersCache) {
+                    const opt = document.createElement('option');
+                    opt.value = rh.id;
+                    opt.textContent = rh.name;
+                    select.appendChild(opt);
+                }
+            } catch (error) {
+                console.error('Error loading rights holders:', error);
+            }
+        }
+
+        async function loadConsents() {
+            try {
+                const search = document.getElementById('searchConsents').value;
+                let url = `${API_URL}/api/v1/consents?page=${currentPage}&page_size=15`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+
+                const response = await apiCall(url);
+                const data = await response.json();
+                totalPages = data.pages;
+
+                const tbody = document.getElementById('consentsTableBody');
+                tbody.innerHTML = '';
+
+                if (data.items.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;padding:40px;">Нет согласий</td></tr>';
+                    document.getElementById('resultCount').textContent = 'Найдено: 0';
+                } else {
+                    document.getElementById('resultCount').textContent = `Найдено: ${data.total}`;
+                }
+
+                for (const consent of data.items) {
+                    const regNums = consent.registration_numbers.slice(0, 3).join(', ');
+                    const regNumsMore = consent.registration_numbers.length > 3 ? '...' : '';
+                    const langLabel = {ru: 'Рус', en: 'Eng', both: 'Рус/Eng'}[consent.document_language || 'both'];
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${escapeHtml(consent.trademark_name)}</strong></td>
+                            <td>${escapeHtml(consent.recipient_name_ru)}</td>
+                            <td style="font-size:12px;">${escapeHtml(regNums)}${regNumsMore}</td>
+                            <td>${langLabel}</td>
+                            <td>${formatDate(consent.valid_from)} - ${formatDate(consent.valid_until)}</td>
+                            <td>
+                                <button class="action-btn btn-secondary" onclick="downloadConsent('${consent.id}')">Скачать</button>
+                                <button class="action-btn btn-danger" onclick="deleteConsent('${consent.id}')">Удалить</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                document.getElementById('pageInfo').textContent = `Страница ${currentPage} из ${totalPages || 1}`;
+                document.getElementById('prevBtn').disabled = currentPage <= 1;
+                document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+            } catch (error) {
+                console.error('Error loading consents:', error);
+            }
+        }
+
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentPage = 1;
+                loadConsents();
+            }, 400);
+        }
+
+        function prevPage() {
+            if (currentPage > 1) { currentPage--; loadConsents(); }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) { currentPage++; loadConsents(); }
+        }
+
+        // Trademark autocomplete search
+        function searchTrademarks() {
+            clearTimeout(trademarkSearchTimeout);
+            const query = document.getElementById('trademarkName').value.trim();
+
+            if (query.length < 2) {
+                document.getElementById('trademarkAutocomplete').style.display = 'none';
+                return;
+            }
+
+            trademarkSearchTimeout = setTimeout(async () => {
+                try {
+                    const response = await apiCall(`${API_URL}/api/v1/trademarks?search=${encodeURIComponent(query)}&page_size=10`);
+                    const data = await response.json();
+                    foundTrademarks = data.items;
+
+                    const list = document.getElementById('trademarkAutocomplete');
+                    if (foundTrademarks.length === 0) {
+                        list.innerHTML = '<div class="autocomplete-item"><em>Ничего не найдено</em></div>';
+                    } else {
+                        list.innerHTML = foundTrademarks.map(tm => {
+                            const regCount = tm.registrations ? tm.registrations.length : 0;
+                            const holder = tm.rights_holder ? tm.rights_holder.name : '';
+                            return `
+                                <div class="autocomplete-item" onclick="selectTrademark('${tm.id}', '${escapeHtml(tm.name)}')">
+                                    <div class="tm-name">${escapeHtml(tm.name)}</div>
+                                    <div class="tm-details">
+                                        <span class="reg-count">${regCount} регистраций</span>
+                                        ${holder ? ` | ${escapeHtml(holder.substring(0, 40))}` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                    list.style.display = 'block';
+                } catch (error) {
+                    console.error('Error searching trademarks:', error);
+                }
+            }, 300);
+        }
+
+        async function selectTrademark(tmId, tmName) {
+            document.getElementById('trademarkName').value = tmName;
+            document.getElementById('trademarkAutocomplete').style.display = 'none';
+
+            // Find the trademark and load its registrations
+            const tm = foundTrademarks.find(t => t.id === tmId);
+            if (tm && tm.registrations) {
+                foundRegistrations = tm.registrations;
+                renderFoundRegistrations();
+
+                // Auto-select rights holder if available
+                if (tm.rights_holder) {
+                    const select = document.getElementById('rightsHolderId');
+                    for (let i = 0; i < select.options.length; i++) {
+                        if (select.options[i].value === tm.rights_holder.id) {
+                            select.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        function renderFoundRegistrations() {
+            const container = document.getElementById('foundRegistrationsContainer');
+            const list = document.getElementById('foundRegistrationsList');
+
+            if (foundRegistrations.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            list.innerHTML = foundRegistrations.map((reg, idx) => {
+                const regNum = reg.registration_number || reg.application_number || '-';
+                const territory = reg.territory ? (reg.territory.name_ru || reg.territory.name_en) : '-';
+                const isSelected = registrationNumbers.includes(regNum);
+                return `
+                    <div class="found-reg-item">
+                        <input type="checkbox" id="reg_${idx}" ${isSelected ? 'checked' : ''}
+                               onchange="toggleRegistration('${regNum}', this.checked)">
+                        <label for="reg_${idx}">
+                            <strong>№ ${escapeHtml(regNum)}</strong>
+                            <span class="territory">(${escapeHtml(territory)})</span>
+                        </label>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleRegistration(regNum, isChecked) {
+            if (isChecked) {
+                if (!registrationNumbers.includes(regNum)) {
+                    registrationNumbers.push(regNum);
+                }
+            } else {
+                registrationNumbers = registrationNumbers.filter(n => n !== regNum);
+            }
+            renderRegNumbers();
+        }
+
+        function selectAllRegistrations() {
+            for (const reg of foundRegistrations) {
+                const regNum = reg.registration_number || reg.application_number;
+                if (regNum && !registrationNumbers.includes(regNum)) {
+                    registrationNumbers.push(regNum);
+                }
+            }
+            renderFoundRegistrations();
+            renderRegNumbers();
+        }
+
+        function deselectAllRegistrations() {
+            for (const reg of foundRegistrations) {
+                const regNum = reg.registration_number || reg.application_number;
+                registrationNumbers = registrationNumbers.filter(n => n !== regNum);
+            }
+            renderFoundRegistrations();
+            renderRegNumbers();
+        }
+
+        function addRegNumber() {
+            const input = document.getElementById('newRegNumber');
+            const value = input.value.trim();
+            if (value && !registrationNumbers.includes(value)) {
+                registrationNumbers.push(value);
+                renderRegNumbers();
+                renderFoundRegistrations();
+                input.value = '';
+            }
+        }
+
+        function removeRegNumber(num) {
+            registrationNumbers = registrationNumbers.filter(n => n !== num);
+            renderRegNumbers();
+            renderFoundRegistrations();
+        }
+
+        function renderRegNumbers() {
+            const container = document.getElementById('regNumbersList');
+            container.innerHTML = registrationNumbers.map(num => `
+                <span class="reg-number-tag">
+                    № ${escapeHtml(num)}
+                    <button type="button" onclick="removeRegNumber('${num}')">&times;</button>
+                </span>
+            `).join('');
+        }
+
+        function getSelectedLanguage() {
+            if (document.getElementById('langRu').checked) return 'ru';
+            if (document.getElementById('langEn').checked) return 'en';
+            return 'both';
+        }
+
+        async function submitConsent(event) {
+            event.preventDefault();
+
+            const errorEl = document.getElementById('formError');
+            const successEl = document.getElementById('formSuccess');
+            errorEl.textContent = '';
+            successEl.textContent = '';
+
+            if (registrationNumbers.length === 0) {
+                errorEl.textContent = 'Добавьте хотя бы один номер регистрации';
+                return;
+            }
+
+            const data = {
+                rights_holder_id: document.getElementById('rightsHolderId').value,
+                signatory_name_ru: document.getElementById('signatoryNameRu').value,
+                signatory_name_en: document.getElementById('signatoryNameEn').value,
+                signatory_position_ru: document.getElementById('signatoryPositionRu').value || 'Директор',
+                signatory_position_en: document.getElementById('signatoryPositionEn').value || 'Director',
+                recipient_name_ru: document.getElementById('recipientNameRu').value,
+                recipient_name_en: document.getElementById('recipientNameEn').value,
+                recipient_inn: document.getElementById('recipientInn').value || null,
+                recipient_address_ru: document.getElementById('recipientAddressRu').value,
+                recipient_address_en: document.getElementById('recipientAddressEn').value,
+                contract_number: document.getElementById('contractNumber').value || null,
+                contract_date: document.getElementById('contractDate').value || null,
+                usage_purpose_ru: document.getElementById('usagePurposeRu').value,
+                usage_purpose_en: document.getElementById('usagePurposeEn').value,
+                trademark_name: document.getElementById('trademarkName').value,
+                registration_numbers: registrationNumbers,
+                valid_from: document.getElementById('validFrom').value,
+                valid_until: document.getElementById('validUntil').value,
+                document_date: document.getElementById('documentDate').value,
+                document_language: getSelectedLanguage(),
+            };
+
+            try {
+                const response = await apiCall(`${API_URL}/api/v1/consents`, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Ошибка создания согласия');
+                }
+
+                const result = await response.json();
+                successEl.textContent = 'Согласие успешно создано!';
+
+                // Offer download
+                if (confirm('Согласие создано. Скачать документ?')) {
+                    downloadConsent(result.id);
+                }
+
+                // Reset form and go to list
+                resetForm();
+                showTab('list');
+                loadConsents();
+
+            } catch (error) {
+                errorEl.textContent = error.message;
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('consentForm').reset();
+            document.getElementById('langBoth').checked = true;
+            registrationNumbers = [];
+            foundRegistrations = [];
+            foundTrademarks = [];
+            renderRegNumbers();
+            document.getElementById('foundRegistrationsContainer').style.display = 'none';
+            setDefaultDates();
+            document.getElementById('formError').textContent = '';
+            document.getElementById('formSuccess').textContent = '';
+        }
+
+        async function downloadConsent(id) {
+            try {
+                const response = await fetch(`${API_URL}/api/v1/consents/${id}/download`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Ошибка скачивания');
+
+                const blob = await response.blob();
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = 'consent.docx';
+                if (contentDisposition) {
+                    const match = contentDisposition.match(/filename="(.+)"/);
+                    if (match) filename = match[1];
+                }
+
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Ошибка при скачивании: ' + error.message);
+            }
+        }
+
+        async function deleteConsent(id) {
+            if (!confirm('Удалить это согласие?')) return;
+
+            try {
+                const response = await apiCall(`${API_URL}/api/v1/consents/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok && response.status !== 204) {
+                    throw new Error('Ошибка удаления');
+                }
+
+                loadConsents();
+            } catch (error) {
+                alert('Ошибка при удалении: ' + error.message);
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('ru-RU');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        // INN lookup - opens rusprofile.ru in new tab
+        async function lookupInn() {
+            const inn = document.getElementById('recipientInn').value.trim();
+            const resultEl = document.getElementById('innLookupResult');
+
+            if (!inn) {
+                resultEl.innerHTML = '<span style="color:#d32f2f;">Введите ИНН</span>';
+                return;
+            }
+
+            if (!/^\d{10}$|^\d{12}$/.test(inn)) {
+                resultEl.innerHTML = '<span style="color:#d32f2f;">ИНН должен содержать 10 или 12 цифр</span>';
+                return;
+            }
+
+            // Open rusprofile.ru in new tab for manual verification
+            window.open(`https://www.rusprofile.ru/search?query=${inn}`, '_blank');
+            resultEl.innerHTML = '<span style="color:#1565c0;">Открыта страница rusprofile.ru для проверки ИНН</span>';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Товарные знаки</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 20px; background: #f5f5f5;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { color: #333; margin-bottom: 20px; }
+
+        /* Login form */
+        .login-form {
+            background: white; padding: 30px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 400px; margin: 50px auto;
+        }
+        .login-form h2 { margin-top: 0; }
+        .login-form input {
+            width: 100%; padding: 12px; margin: 10px 0;
+            border: 1px solid #ddd; border-radius: 4px; font-size: 16px;
+        }
+        .login-form button {
+            width: 100%; padding: 12px; background: #4CAF50; color: white;
+            border: none; border-radius: 4px; font-size: 16px; cursor: pointer;
+        }
+        .login-form button:hover { background: #45a049; }
+        .error { color: #d32f2f; margin-top: 10px; }
+
+        /* Dashboard */
+        .dashboard { display: none; }
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+        }
+        .header button {
+            padding: 10px 20px; background: #f44336; color: white;
+            border: none; border-radius: 4px; cursor: pointer;
+        }
+        .stats {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white; padding: 20px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stat-card h3 { margin: 0; color: #666; font-size: 14px; }
+        .stat-card .value { font-size: 32px; font-weight: bold; color: #333; }
+
+        /* Filters */
+        .filters {
+            background: white; padding: 20px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px;
+        }
+        .filters h3 { margin: 0 0 15px 0; color: #333; font-size: 16px; }
+        .filters-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px; align-items: end;
+        }
+        .filter-group { display: flex; flex-direction: column; }
+        .filter-group label {
+            font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600;
+        }
+        .filter-group select, .filter-group input {
+            padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;
+            font-size: 14px; background: white;
+        }
+        .filter-actions {
+            display: flex; gap: 10px; margin-top: 15px;
+        }
+        .btn {
+            padding: 8px 16px; border: none; border-radius: 4px;
+            cursor: pointer; font-size: 14px;
+        }
+        .btn-primary { background: #4472C4; color: white; }
+        .btn-primary:hover { background: #3a63a8; }
+        .btn-secondary { background: #e0e0e0; color: #333; }
+        .btn-secondary:hover { background: #d0d0d0; }
+        .btn-success { background: #4CAF50; color: white; }
+        .btn-success:hover { background: #45a049; }
+
+        /* Table */
+        .table-container {
+            background: white; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden;
+        }
+        .table-header {
+            padding: 15px 20px; border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center; gap: 10px;
+        }
+        .table-header input {
+            padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 300px;
+        }
+        .export-btn {
+            padding: 10px 20px; background: #2196F3; color: white;
+            border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f9f9f9; font-weight: 600; color: #666; }
+        tr:hover { background: #f5f5f5; }
+        td { font-size: 14px; }
+
+        .status {
+            padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;
+            display: inline-block;
+        }
+        .status-registered { background: #e8f5e9; color: #2e7d32; }
+        .status-pending { background: #fff3e0; color: #ef6c00; }
+        .status-expired { background: #ffebee; color: #c62828; }
+        .status-rejected { background: #fce4ec; color: #ad1457; }
+        .status-terminated { background: #efebe9; color: #4e342e; }
+        .status-partial { background: #e3f2fd; color: #1565c0; }
+        .status-decision { background: #f3e5f5; color: #7b1fa2; }
+        .status-opposition { background: #fff8e1; color: #f57f17; }
+
+        .renewal-status {
+            padding: 3px 6px; border-radius: 3px; font-size: 11px; display: inline-block;
+            margin-top: 2px;
+        }
+        .renewal-active { background: #e8f5e9; color: #2e7d32; }
+        .renewal-filed { background: #e3f2fd; color: #1565c0; }
+        .renewal-not-renewing { background: #fce4ec; color: #ad1457; }
+        .renewal-expired { background: #ffebee; color: #c62828; }
+
+        .pagination {
+            padding: 15px 20px; display: flex; justify-content: center; gap: 10px;
+            align-items: center;
+        }
+        .pagination button {
+            padding: 8px 16px; border: 1px solid #ddd; background: white;
+            border-radius: 4px; cursor: pointer;
+        }
+        .pagination button:hover { background: #f5f5f5; }
+        .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .pagination span { padding: 8px 16px; color: #666; }
+
+        .expiring { margin-top: 30px; }
+        .expiring h2 { color: #d32f2f; }
+
+        .active-filters {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;
+        }
+        .filter-tag {
+            background: #e3f2fd; color: #1565c0; padding: 4px 10px;
+            border-radius: 16px; font-size: 12px; display: flex; align-items: center; gap: 5px;
+        }
+        .filter-tag button {
+            background: none; border: none; color: #1565c0; cursor: pointer;
+            font-size: 14px; padding: 0; line-height: 1;
+        }
+        .result-count { color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Form -->
+        <div class="login-form" id="loginForm">
+            <h2>Вход в систему</h2>
+            <input type="email" id="email" placeholder="Email" value="admin@example.com">
+            <input type="password" id="password" placeholder="Пароль" value="password123">
+            <button onclick="login()">Войти</button>
+            <div class="error" id="loginError"></div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard" id="dashboard">
+            <div class="header">
+                <h1>Система управления товарными знаками</h1>
+                <div style="display:flex;gap:10px;">
+                    <a href="/static/consents.html" style="padding:10px 20px;background:#2196F3;color:white;text-decoration:none;border-radius:4px;">Согласия</a>
+                    <button onclick="logout()">Выйти</button>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Всего товарных знаков</h3>
+                    <div class="value" id="totalCount">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Активных регистраций</h3>
+                    <div class="value" id="activeCount">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Истекает в ближайшие 6 мес.</h3>
+                    <div class="value" id="expiringCount" style="color: #d32f2f;">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Территорий</h3>
+                    <div class="value" id="territoryCount">-</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <h3>Фильтры поиска</h3>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label>Поиск по названию ТЗ</label>
+                        <input type="text" id="search" placeholder="Введите название..." onkeyup="debounceSearch()">
+                    </div>
+                    <div class="filter-group">
+                        <label>Поиск по товарам/услугам</label>
+                        <input type="text" id="goodsSearch" placeholder="обувь, косметика..." onkeyup="debounceSearch()">
+                    </div>
+                    <div class="filter-group">
+                        <label>Класс МКТУ</label>
+                        <select id="filterClass" onchange="applyFilters()">
+                            <option value="">Все классы</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Территория / Страна</label>
+                        <select id="filterTerritory" onchange="applyFilters()">
+                            <option value="">Все территории</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Правообладатель</label>
+                        <select id="filterHolder" onchange="applyFilters()">
+                            <option value="">Все правообладатели</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Статус регистрации</label>
+                        <select id="filterStatus" onchange="applyFilters()">
+                            <option value="">Все статусы</option>
+                            <option value="registered">Зарегистрирован</option>
+                            <option value="pending">Делопроизводство</option>
+                            <option value="opposition">Период оппозиции</option>
+                            <option value="partial_registration">Частичная регистрация</option>
+                            <option value="decision_pending">Решение о регистрации</option>
+                            <option value="rejected">Отказ</option>
+                            <option value="terminated">Прекращено</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Статус продления</label>
+                        <select id="filterRenewal" onchange="applyFilters()">
+                            <option value="">Все</option>
+                            <option value="active">Активен</option>
+                            <option value="renewal_filed">Продление подано</option>
+                            <option value="not_renewing">Решено не продлевать</option>
+                            <option value="expired">Истёк</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn btn-primary" onclick="applyFilters()">Применить</button>
+                    <button class="btn btn-secondary" onclick="resetFilters()">Сбросить фильтры</button>
+                    <button class="btn btn-success" onclick="exportExcel()">Скачать Excel</button>
+                </div>
+            </div>
+
+            <!-- Active filters tags -->
+            <div class="active-filters" id="activeFilters"></div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <span class="result-count" id="resultCount"></span>
+                    <span></span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Товарный знак</th>
+                            <th>Правообладатель</th>
+                            <th>Территория</th>
+                            <th>Классы МКТУ</th>
+                            <th>Номер заявки</th>
+                            <th>Номер регистрации</th>
+                            <th>Срок действия</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <button onclick="prevPage()" id="prevBtn">Назад</button>
+                    <span id="pageInfo">Страница 1</span>
+                    <button onclick="nextPage()" id="nextBtn">Вперёд</button>
+                </div>
+            </div>
+
+            <div class="expiring" id="expiringSection">
+                <h2>Истекающие регистрации (ближайшие 180 дней)</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Товарный знак</th>
+                                <th>Территория</th>
+                                <th>Номер регистрации</th>
+                                <th>Срок действия</th>
+                                <th>Дней осталось</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expiringBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '';
+        let token = localStorage.getItem('token');
+        let currentPage = 1;
+        let totalPages = 1;
+        let searchTimeout = null;
+
+        // Filter data caches
+        let territoriesCache = [];
+        let holdersCache = [];
+        let classesCache = [];
+
+        // Check if already logged in
+        if (token) {
+            showDashboard();
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_URL}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Неверный email или пароль');
+                }
+
+                const data = await response.json();
+                token = data.access_token;
+                localStorage.setItem('token', token);
+                localStorage.setItem('refreshToken', data.refresh_token);
+                showDashboard();
+            } catch (error) {
+                document.getElementById('loginError').textContent = error.message;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            token = null;
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('dashboard').style.display = 'none';
+        }
+
+        async function showDashboard() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            await Promise.all([
+                loadFilterData(),
+                loadStats(),
+                loadTrademarks(),
+                loadExpiring()
+            ]);
+        }
+
+        async function apiCall(url) {
+            const response = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.status === 401) {
+                const refreshed = await refreshTokenFn();
+                if (refreshed) {
+                    return apiCall(url);
+                }
+                logout();
+                throw new Error('Session expired');
+            }
+            return response.json();
+        }
+
+        async function refreshTokenFn() {
+            const refreshTokenValue = localStorage.getItem('refreshToken');
+            if (!refreshTokenValue) return false;
+
+            try {
+                const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh_token: refreshTokenValue })
+                });
+                if (!response.ok) return false;
+
+                const data = await response.json();
+                token = data.access_token;
+                localStorage.setItem('token', token);
+                localStorage.setItem('refreshToken', data.refresh_token);
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
+        async function loadFilterData() {
+            try {
+                const [territories, holders, classes] = await Promise.all([
+                    apiCall(`${API_URL}/api/v1/trademarks/territories/list`),
+                    apiCall(`${API_URL}/api/v1/trademarks/rights-holders/list`),
+                    apiCall(`${API_URL}/api/v1/trademarks/classes/list`)
+                ]);
+
+                // Territories
+                territoriesCache = territories;
+                const territorySelect = document.getElementById('filterTerritory');
+                for (const t of territories) {
+                    const opt = document.createElement('option');
+                    opt.value = t.id;
+                    opt.textContent = t.name_ru || t.name_en;
+                    territorySelect.appendChild(opt);
+                }
+
+                // Holders
+                holdersCache = holders;
+                const holderSelect = document.getElementById('filterHolder');
+                for (const h of holders) {
+                    const opt = document.createElement('option');
+                    opt.value = h.id;
+                    opt.textContent = h.name;
+                    holderSelect.appendChild(opt);
+                }
+
+                // Classes
+                classesCache = classes;
+                const classSelect = document.getElementById('filterClass');
+                const uniqueClasses = [...new Map(classes.map(c => [c.icgs_class, c])).values()];
+                for (const c of uniqueClasses) {
+                    const opt = document.createElement('option');
+                    opt.value = c.icgs_class;
+                    const group = c.product_group ? ` (${c.product_group})` : '';
+                    opt.textContent = `Класс ${c.icgs_class}${group} [${c.count}]`;
+                    classSelect.appendChild(opt);
+                }
+
+                document.getElementById('territoryCount').textContent = territories.length;
+
+            } catch (error) {
+                console.error('Error loading filter data:', error);
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const data = await apiCall(`${API_URL}/api/v1/trademarks?page=1&page_size=1`);
+                document.getElementById('totalCount').textContent = data.total;
+                document.getElementById('activeCount').textContent = data.total;
+
+                const expiring = await apiCall(`${API_URL}/api/v1/registrations/expiring/list?days=180`);
+                document.getElementById('expiringCount').textContent = expiring.length;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        function getFilterParams() {
+            const params = new URLSearchParams();
+            params.set('page', currentPage);
+            params.set('page_size', 15);
+
+            const search = document.getElementById('search').value;
+            if (search) params.set('search', search);
+
+            const goodsSearch = document.getElementById('goodsSearch').value;
+            if (goodsSearch) params.set('goods_search', goodsSearch);
+
+            const cls = document.getElementById('filterClass').value;
+            if (cls) params.set('icgs_class', cls);
+
+            const territory = document.getElementById('filterTerritory').value;
+            if (territory) params.set('territory_id', territory);
+
+            const holder = document.getElementById('filterHolder').value;
+            if (holder) params.set('rights_holder_id', holder);
+
+            const status = document.getElementById('filterStatus').value;
+            if (status) params.set('status', status);
+
+            const renewal = document.getElementById('filterRenewal').value;
+            if (renewal) params.set('renewal_status', renewal);
+
+            return params.toString();
+        }
+
+        async function loadTrademarks() {
+            try {
+                const url = `${API_URL}/api/v1/trademarks?${getFilterParams()}`;
+                const data = await apiCall(url);
+                totalPages = data.pages;
+
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = '';
+
+                if (data.items.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#666;padding:40px;">Ничего не найдено</td></tr>';
+                    document.getElementById('resultCount').textContent = 'Найдено: 0';
+                } else {
+                    document.getElementById('resultCount').textContent = `Найдено: ${data.total}`;
+                }
+
+                for (const tm of data.items) {
+                    const classes = tm.classes ? tm.classes.map(c => c.icgs_class).sort((a,b) => a-b).join(', ') : '';
+                    const holder = tm.rights_holder?.name || '-';
+
+                    // Collect all registrations info
+                    let rows = '';
+                    if (tm.registrations && tm.registrations.length > 0) {
+                        for (const reg of tm.registrations) {
+                            const territory = reg.territory?.name_ru || '-';
+                            const appNum = reg.application_number || '-';
+                            const regNum = reg.registration_number || '-';
+                            const expDate = reg.expiration_date ? formatDate(reg.expiration_date) : '-';
+                            const statusHtml = getStatusLabel(reg.status) + getRenewalLabel(reg.renewal_status);
+
+                            rows += `
+                                <tr>
+                                    <td><strong>${escapeHtml(tm.name)}</strong></td>
+                                    <td>${escapeHtml(holder)}</td>
+                                    <td>${escapeHtml(territory)}</td>
+                                    <td>${classes}</td>
+                                    <td>${escapeHtml(appNum)}</td>
+                                    <td>${regNum}</td>
+                                    <td>${expDate}</td>
+                                    <td>${statusHtml}</td>
+                                </tr>
+                            `;
+                        }
+                    } else {
+                        rows = `
+                            <tr>
+                                <td><strong>${escapeHtml(tm.name)}</strong></td>
+                                <td>${escapeHtml(holder)}</td>
+                                <td>-</td>
+                                <td>${classes}</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                        `;
+                    }
+                    tbody.innerHTML += rows;
+                }
+
+                document.getElementById('pageInfo').textContent = `Страница ${currentPage} из ${totalPages || 1}`;
+                document.getElementById('prevBtn').disabled = currentPage <= 1;
+                document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+
+                updateActiveFilters();
+            } catch (error) {
+                console.error('Error loading trademarks:', error);
+            }
+        }
+
+        function updateActiveFilters() {
+            const container = document.getElementById('activeFilters');
+            container.innerHTML = '';
+
+            const filters = [
+                { id: 'search', label: 'Название' },
+                { id: 'goodsSearch', label: 'Товары' },
+                { id: 'filterClass', label: 'Класс МКТУ', getText: (v) => `Класс ${v}` },
+                { id: 'filterTerritory', label: 'Территория', getText: (v) => {
+                    const sel = document.getElementById('filterTerritory');
+                    return sel.options[sel.selectedIndex]?.text || v;
+                }},
+                { id: 'filterHolder', label: 'Правообладатель', getText: (v) => {
+                    const sel = document.getElementById('filterHolder');
+                    return sel.options[sel.selectedIndex]?.text || v;
+                }},
+                { id: 'filterStatus', label: 'Статус', getText: (v) => {
+                    const sel = document.getElementById('filterStatus');
+                    return sel.options[sel.selectedIndex]?.text || v;
+                }},
+                { id: 'filterRenewal', label: 'Продление', getText: (v) => {
+                    const sel = document.getElementById('filterRenewal');
+                    return sel.options[sel.selectedIndex]?.text || v;
+                }},
+            ];
+
+            for (const f of filters) {
+                const el = document.getElementById(f.id);
+                const val = el.value;
+                if (!val) continue;
+
+                const text = f.getText ? f.getText(val) : `${f.label}: ${val}`;
+                const tag = document.createElement('span');
+                tag.className = 'filter-tag';
+                tag.innerHTML = `${escapeHtml(text)} <button onclick="clearFilter('${f.id}')">&times;</button>`;
+                container.appendChild(tag);
+            }
+        }
+
+        function clearFilter(id) {
+            document.getElementById(id).value = '';
+            applyFilters();
+        }
+
+        async function loadExpiring() {
+            try {
+                const data = await apiCall(`${API_URL}/api/v1/registrations/expiring/list?days=180`);
+                const tbody = document.getElementById('expiringBody');
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Нет истекающих регистраций</td></tr>';
+                    return;
+                }
+
+                for (const reg of data) {
+                    const tmName = reg.trademark?.name || '-';
+                    const territory = reg.territory?.name_ru || '-';
+                    const regNum = reg.registration_number || '-';
+                    const expDate = reg.expiration_date;
+                    const daysLeft = Math.ceil((new Date(expDate) - new Date()) / (1000 * 60 * 60 * 24));
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${escapeHtml(tmName)}</strong></td>
+                            <td>${escapeHtml(territory)}</td>
+                            <td>${regNum}</td>
+                            <td>${formatDate(expDate)}</td>
+                            <td style="color: ${daysLeft < 30 ? '#d32f2f' : daysLeft < 90 ? '#ef6c00' : '#333'}">
+                                <strong>${daysLeft}</strong> дн.
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading expiring:', error);
+            }
+        }
+
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentPage = 1;
+                loadTrademarks();
+            }, 400);
+        }
+
+        function applyFilters() {
+            currentPage = 1;
+            loadTrademarks();
+        }
+
+        function resetFilters() {
+            document.getElementById('search').value = '';
+            document.getElementById('goodsSearch').value = '';
+            document.getElementById('filterClass').value = '';
+            document.getElementById('filterTerritory').value = '';
+            document.getElementById('filterHolder').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterRenewal').value = '';
+            currentPage = 1;
+            loadTrademarks();
+        }
+
+        function prevPage() {
+            if (currentPage > 1) { currentPage--; loadTrademarks(); }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) { currentPage++; loadTrademarks(); }
+        }
+
+        async function exportExcel() {
+            try {
+                const response = await fetch(`${API_URL}/api/v1/reports/export/excel`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `trademarks_${new Date().toISOString().split('T')[0]}.xlsx`;
+                a.click();
+            } catch (error) {
+                alert('Ошибка при экспорте: ' + error.message);
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('ru-RU');
+        }
+
+        function getStatusLabel(status) {
+            const map = {
+                'registered': ['Зарегистрирован', 'status-registered'],
+                'pending': ['Делопроизводство', 'status-pending'],
+                'opposition': ['Оппозиция', 'status-opposition'],
+                'partial_registration': ['Частичная рег.', 'status-partial'],
+                'decision_pending': ['Решение', 'status-decision'],
+                'rejected': ['Отказ', 'status-rejected'],
+                'terminated': ['Прекращено', 'status-terminated'],
+            };
+            const [label, cls] = map[status] || [status || '-', ''];
+            return `<span class="status ${cls}">${label}</span>`;
+        }
+
+        function getRenewalLabel(renewalStatus) {
+            if (!renewalStatus || renewalStatus === 'active') return '';
+            const map = {
+                'renewal_filed': ['Продление подано', 'renewal-filed'],
+                'not_renewing': ['Не продлевается', 'renewal-not-renewing'],
+                'expired': ['Истёк', 'renewal-expired'],
+            };
+            const [label, cls] = map[renewalStatus] || [renewalStatus, ''];
+            return `<br><span class="renewal-status ${cls}">${label}</span>`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+    </script>
+</body>
+</html>
