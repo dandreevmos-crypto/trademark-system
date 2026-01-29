@@ -33,22 +33,22 @@ async def init_default_data():
         if result.scalar_one_or_none() is None:
             # Add default territories
             territories = [
-                Territory(code="RU", name_ru="Россия", name_en="Russia"),
-                Territory(code="EU", name_ru="Европейский союз", name_en="European Union"),
-                Territory(code="US", name_ru="США", name_en="United States"),
-                Territory(code="CN", name_ru="Китай", name_en="China"),
-                Territory(code="JP", name_ru="Япония", name_en="Japan"),
-                Territory(code="KR", name_ru="Южная Корея", name_en="South Korea"),
-                Territory(code="IN", name_ru="Индия", name_en="India"),
-                Territory(code="BR", name_ru="Бразилия", name_en="Brazil"),
-                Territory(code="GB", name_ru="Великобритания", name_en="United Kingdom"),
-                Territory(code="DE", name_ru="Германия", name_en="Germany"),
-                Territory(code="FR", name_ru="Франция", name_en="France"),
-                Territory(code="IT", name_ru="Италия", name_en="Italy"),
-                Territory(code="ES", name_ru="Испания", name_en="Spain"),
-                Territory(code="CA", name_ru="Канада", name_en="Canada"),
-                Territory(code="AU", name_ru="Австралия", name_en="Australia"),
-                Territory(code="WIPO", name_ru="ВОИС (Мадридская система)", name_en="WIPO (Madrid System)"),
+                Territory(iso_code="RU", name_ru="Россия", name_en="Russia"),
+                Territory(iso_code="EU", name_ru="Европейский союз", name_en="European Union"),
+                Territory(iso_code="US", name_ru="США", name_en="United States"),
+                Territory(iso_code="CN", name_ru="Китай", name_en="China"),
+                Territory(iso_code="JP", name_ru="Япония", name_en="Japan"),
+                Territory(iso_code="KR", name_ru="Южная Корея", name_en="South Korea"),
+                Territory(iso_code="IN", name_ru="Индия", name_en="India"),
+                Territory(iso_code="BR", name_ru="Бразилия", name_en="Brazil"),
+                Territory(iso_code="GB", name_ru="Великобритания", name_en="United Kingdom"),
+                Territory(iso_code="DE", name_ru="Германия", name_en="Germany"),
+                Territory(iso_code="FR", name_ru="Франция", name_en="France"),
+                Territory(iso_code="IT", name_ru="Италия", name_en="Italy"),
+                Territory(iso_code="ES", name_ru="Испания", name_en="Spain"),
+                Territory(iso_code="CA", name_ru="Канада", name_en="Canada"),
+                Territory(iso_code="AU", name_ru="Австралия", name_en="Australia"),
+                Territory(iso_code="WIPO", name_ru="ВОИС (Мадридская система)", name_en="WIPO (Madrid System)"),
             ]
             session.add_all(territories)
             await session.commit()
