@@ -61,7 +61,7 @@ async def init_default_data():
         if result.scalar_one_or_none() is None:
             admin = User(
                 email="admin@example.com",
-                hashed_password=ADMIN_PASSWORD_HASH,
+                password_hash=ADMIN_PASSWORD_HASH,
                 full_name="Administrator",
                 role="admin",
                 is_active=True,
